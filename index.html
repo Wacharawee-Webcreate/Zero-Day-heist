@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<!-- ZERO DAY HEIST v2 -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZERO DAY HEIST — a math board game</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+  <link rel="stylesheet" href="css/style.css?v=7">
+</head>
+<body>
+
+  <!-- ============ LANDING ============ -->
+  <section id="screen-landing" class="screen active">
+    <div class="landing-inner">
+      <div class="glitch-title">
+        <h1>ZERO DAY<br>HEIST</h1>
+        <div class="title-sub">A math board game for 2–4 players · grades 9–11</div>
+      </div>
+      <p class="story">
+        The year is 2077. A rogue AI called <b>AXIOM</b> has sealed all of humanity's knowledge
+        inside the <b>Zero Day Vault</b> — encrypted with pure mathematics, the one language it
+        thought no human still spoke fluently.<br><br>
+        It was wrong. You are a <b>Cipher Runner</b>: part hacker, part mathematician. Race your rivals
+        around AXIOM's defense circuit, crack its Cipher Gates, and be the first to break into the vault.
+      </p>
+      <div class="landing-actions">
+        <button id="btn-new-heist" class="btn-primary big">▶ Start the heist</button>
+        <button id="btn-rules" class="btn-ghost big">📖 How to play</button>
+      </div>
+      <div class="landing-tiles">
+        <span class="lt" style="--cc:#3ec5ff">◆ solve to earn</span>
+        <span class="lt" style="--cc:#ffc857">⬟ unlock gates</span>
+        <span class="lt" style="--cc:#b78bff">✦ draw exploits</span>
+        <span class="lt" style="--cc:#ff5d5d">⚠ dodge firewalls</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SETUP ============ -->
+  <section id="screen-setup" class="screen">
+    <div class="panel setup-panel">
+      <h2 class="panel-title">Mission setup</h2>
+
+      <div class="setup-block">
+        <label class="setup-label">Runners — name yourself &amp; pick your icon</label>
+        <div class="seg" id="seg-players">
+          <button class="seg-btn sel" data-val="2">2</button>
+          <button class="seg-btn" data-val="3">3</button>
+          <button class="seg-btn" data-val="4">4</button>
+        </div>
+        <div id="name-inputs" class="name-inputs"></div>
+      </div>
+
+      <div class="setup-block">
+        <label class="setup-label">Challenge timer</label>
+        <div class="seg" id="seg-timer">
+          <button class="seg-btn" data-val="relaxed">Relaxed<br><small>no timer</small></button>
+          <button class="seg-btn sel" data-val="standard">Standard<br><small>90s</small></button>
+          <button class="seg-btn" data-val="speedrun">Speedrun<br><small>45s</small></button>
+        </div>
+      </div>
+
+      <div class="setup-block">
+        <label class="setup-label">Key fragments needed (game length)</label>
+        <div class="seg" id="seg-frags">
+          <button class="seg-btn" data-val="2">2<br><small>quick hack ~20m</small></button>
+          <button class="seg-btn sel" data-val="3">3<br><small>standard ~35m</small></button>
+          <button class="seg-btn" data-val="4">4<br><small>full heist ~50m</small></button>
+        </div>
+      </div>
+
+      <div class="m-actions">
+        <button id="btn-launch" class="btn-primary big">Launch the heist</button>
+        <button id="setup-back" class="btn-ghost">Back</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GAME ============ -->
+  <section id="screen-game" class="screen">
+    <div class="game-layout">
+
+      <div class="board-col">
+        <div class="game-topbar">
+          <span class="brand">ZERO DAY HEIST</span>
+          <span id="turn-banner" class="turn-banner"></span>
+          <span class="topbar-btns">
+            <button id="rules-from-game" class="btn-ghost small">📖</button>
+            <button id="btn-mute" class="btn-ghost small">🔊</button>
+            <button id="btn-quit" class="btn-ghost small">✕</button>
+          </span>
+        </div>
+        <div id="board-wrap" class="board-wrap"></div>
+      </div>
+
+      <aside class="side-col">
+        <div class="panel">
+          <h3 class="panel-mini">Control deck</h3>
+          <div id="mission-strip" class="mission-strip"></div>
+          <div id="dice-area" class="dice-area"></div>
+          <div id="move-options" class="move-options"></div>
+        </div>
+
+        <div class="panel">
+          <h3 class="panel-mini">Runners</h3>
+          <div id="players-panel" class="players-panel"></div>
+        </div>
+
+        <div class="panel">
+          <h3 class="panel-mini">Exploit chips <small>(current runner)</small></h3>
+          <div id="hand-panel" class="hand-panel"></div>
+        </div>
+
+        <div class="panel log-panel">
+          <h3 class="panel-mini">System feed</h3>
+          <ul id="log-feed" class="log-feed"></ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ RULES ============ -->
+  <section id="screen-rules" class="screen">
+    <div class="panel rules-panel">
+      <h2 class="panel-title">How to play — Zero Day Heist</h2>
+
+      <h3>🎯 Objective</h3>
+      <p>Be the first Cipher Runner to collect the required <b>⬟ Key Fragments</b> from Cipher Gates,
+      return to the <b>Vault Entrance</b> (tile ▶), and crack all <b>3 Vault Locks</b> in a row.</p>
+
+      <h3>🎲 Your turn — movement is math</h3>
+      <p>Roll two dice. You don't just move the total — you <b>choose one of three routes</b>:</p>
+      <ul>
+        <li><b>SUM</b> — move <i>a + b</i> tiles (fast, predictable)</li>
+        <li><b>GAP</b> — move <i>|a − b|</i> tiles (small, precise hops)</li>
+        <li><b>FLUX</b> — move <i>a × b mod 12</i> tiles (0 becomes 12 — the overflow gamble)</li>
+      </ul>
+      <p>Pick the route that lands you where you want: on a Data Node to farm shards, on a Power Surge
+      for a chip, or right at a Gate — while dodging Firewalls. <b>Doubles</b> give you a free Exploit Chip.</p>
+
+      <h3>🗺 The circuit — 36 tiles</h3>
+      <ul>
+        <li><b>◆ Data Node</b> — choose any math category <i>and</i> a risk tier, then solve one problem.
+            Tier 1 = +2 ◈, Tier 2 = +3 ◈, Tier 3 = +5 ◈. Wrong answers cost nothing but your turn.</li>
+        <li><b>⚠ Firewall</b> — a rapid mental-math check on a short timer. Pass: +1 ◈. Fail: pushed back 3 tiles.</li>
+        <li><b>✦ Power Surge</b> — draw an Exploit Chip (hand limit 3).</li>
+        <li><b>⬟ Cipher Gate</b> (×4, one per quadrant) — while a gate is locked <i>for you</i>, you cannot pass it:
+            your move stops there. Pay <b>3 ◈</b> to attempt its Tier-2 problem in the gate's category.
+            Solve it → <b>Key Fragment</b>, and that gate never blocks you again. Fail → the shards are burned;
+            loop around (or stall) and try again next visit.</li>
+        <li><b>▶ Vault Entrance</b> — passing it earns +1 ◈ per lap; landing on it exactly earns +2 ◈.</li>
+      </ul>
+
+      <h3>◈ Data Shards — the economy</h3>
+      <p>Shards are earned at Data Nodes and Firewalls, and spent on Gate attempts (3 ◈) and vault
+      brute-force retries (4 ◈). You start with 3 ◈. Manage them: arriving at a gate broke means a wasted lap.</p>
+
+      <h3>🂠 Exploit Chips (power cards)</h3>
+      <ul>
+        <li><b>⟲ Reroll Protocol</b> — reroll both dice <i>(after rolling)</i></li>
+        <li><b>⏩ Overclock</b> — +3 steps to every route option <i>(after rolling)</i></li>
+        <li><b>🛡 Firewall Breaker</b> — bypass a firewall <i>(when you hit one)</i></li>
+        <li><b>💥 Glitch Bomb</b> — knock a rival back 4 tiles <i>(start of your turn)</i></li>
+        <li><b>🧲 Data Siphon</b> — steal 2 ◈ from a rival <i>(start of your turn)</i></li>
+        <li><b>💡 Hint Chip</b> — reveal the hint on your current problem <i>(during a challenge)</i></li>
+        <li><b>⏳ Time Dilation</b> — +60 seconds on your timer <i>(during a challenge)</i></li>
+        <li><b>✕2 Double Down</b> — your next correct Data Node pays double <i>(start of your turn)</i></li>
+      </ul>
+
+      <h3>🔓 The endgame — cracking the vault</h3>
+      <p>Once you hold enough Key Fragments, reaching (or passing) the Vault Entrance pulls you inside.
+      You must solve <b>3 Vault Locks back-to-back</b> — Tier 1, then Tier 2, then Tier 3, in three random
+      categories. Fail a lock and you may <b>brute-force one retry for 4 ◈</b>; otherwise AXIOM ejects you
+      six tiles back with a 2 ◈ fine, and you must loop around to re-enter. Crack all three locks and
+      <b>you win the heist</b>.</p>
+
+      <h3>📚 The math (Grades 9–11)</h3>
+      <table class="rules-table">
+        <tr><th>Category</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th></tr>
+        <tr><td>𝑥 Algebra</td><td>1–2 step linear equations</td><td>systems, inequalities, proportions</td><td>word problems, reverse percent</td></tr>
+        <tr><td>∿ Quadratics</td><td>factoring, evaluating</td><td>vertex, minimum, Vieta's</td><td>discriminant, non-monic</td></tr>
+        <tr><td>ƒ Functions</td><td>evaluating f(x)</td><td>slope, intercepts, solving f(x)=c</td><td>composition, inverses, shifts</td></tr>
+        <tr><td>△ Geo &amp; Trig</td><td>Pythagoras, areas</td><td>polygons, trapezoids, SOH-CAH-TOA</td><td>distance formula, π-coefficients</td></tr>
+        <tr><td>xⁿ Exponents</td><td>power laws</td><td>negative &amp; zero exponents</td><td>exponential equations, logs</td></tr>
+        <tr><td>⚄ Probability</td><td>single events</td><td>two dice, mean/median, complements</td><td>combinations, "at least one"</td></tr>
+      </table>
+      <p><b>Answer format:</b> whole numbers, decimals, or fractions like <code>5/12</code> all work.</p>
+
+      <h3>💡 Strategy notes</h3>
+      <ul>
+        <li>GAP moves of 1–2 tiles let you snipe exact landings — great for reaching gates with shards in hand.</li>
+        <li>Tier 3 problems pay 2.5× Tier 1 — high-risk farming wins races if your math is sharp.</li>
+        <li>Save Glitch Bombs for a rival who's about to enter the vault.</li>
+        <li>Broke at a gate? You're stalled, not stuck: gates only stop you once per approach — next turn you fly past (without the fragment).</li>
+      </ul>
+
+      <div class="m-actions">
+        <button id="rules-back" class="btn-primary">← Back</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MODAL ============ -->
+  <div id="modal-overlay" class="modal-overlay">
+    <div id="modal-box" class="modal-box"></div>
+  </div>
+
+  <script src="js/sound.js?v=6"></script>
+  <script src="js/mathgen.js?v=6"></script>
+  <script src="js/cards.js?v=6"></script>
+  <script src="js/board.js?v=6"></script>
+  <script src="js/ui.js?v=6"></script>
+  <script src="js/game.js?v=6"></script>
+  <script src="js/main.js?v=6"></script>
+</body>
+</html>
